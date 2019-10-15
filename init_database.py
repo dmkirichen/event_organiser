@@ -13,7 +13,7 @@ post = {"_id": 0, "name": "default"}
 type_col.save(post)
 
 post = {"_id": 0, "address": "nowhere", "visitors": 0, "openness": "open", "type": 0,
-        "start": datetime.datetime.now().utcnow(), "end": datetime.datetime.now().utcnow()}
+        "start": datetime.datetime.utcnow(), "end": datetime.datetime.utcnow()}
 event_col.save(post)
 
 post = {"_id": 0, "event_id": 0, "type": "nothing"}

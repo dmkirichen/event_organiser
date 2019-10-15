@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
+import datetime
 
 # Flask default
 app = Flask(__name__)
@@ -14,9 +15,27 @@ type_col = db['types']
 order_col = db['orders']
 
 
-def create_orders():
+def create_orders(event_id, num_people, week_day, event_type):
+    # Creates all required orders for event
+    order_col.delete_many({"event_id": event_id})
 
-    pass
+    if event_type == "public":
+        order_col.save({"event_id": event_id, "type": "medical assistance"})
+        order_col.save({"event_id": event_id, "type": "security assistance"})
+        order_col.save({"event_id": event_id, "type": "government approval"})
+
+    else:
+        if num_people > 50:
+            kind = "medical assistance"
+            order_col.save({"event_id": event_id, "type": kind})
+
+        if num_people > 20:
+            kind = "security assistance"
+            order_col.save({"event_id": event_id, "type": kind})
+
+        if week_day not in ("Saturday", "Sunday"):
+            kind = "government approval"
+            order_col.save({"event_id": event_id, "type": kind})
 
 
 class Events(Resource):
