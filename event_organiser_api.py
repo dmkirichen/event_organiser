@@ -70,7 +70,17 @@ def is_event_correct(event_json):
         return False
     if event_json["visitors"] < 0:
         return False
-    type_col.find_one({"name": event_json["type"]})
+    if type_col.find_one({"_id": event_json["type"]}) == {}:
+        return False
+    return True
+
+
+def is_timeline_correct(time_json):
+    start_dt = datetime.strptime(time_json["start"], "%Y-%m-%d T%H:%M %z")
+    end_dt = datetime.strptime(time_json["end"], "%Y-%m-%d T%H:%M %z")
+    if end_dt < start_dt:
+        return False
+    return True
 
 
 class Events(Resource):
@@ -87,7 +97,8 @@ class Events(Resource):
         event_json = request.get_json()
 
         # Checks correctness of the events
-
+        if not is_event_correct(event_json):
+            return {"error": "your event has unappropriate fields"}
 
         # Creates new event in the database
         event_col.save(event_json)
@@ -129,6 +140,8 @@ class ExtraOrders(Resource):
 class EventsSearch(Resource):
     def post(self):
         search_json = request.get_json()
+        if not is_timeline_correct(search_json):
+            return {"error": "your timeline is not correct"}
         search_start_dt = datetime.strptime(search_json["start"], "%Y-%m-%d T%H:%M %z")
         search_end_dt = datetime.strptime(search_json["end"], "%Y-%m-%d T%H:%M %z")
         doc_dict = dict()
@@ -146,6 +159,8 @@ class EventsSearch(Resource):
 class OrdersSearch(Resource):
     def post(self):
         search_json = request.get_json()
+        if not is_timeline_correct(search_json):
+            return {"error": "your timeline is not correct"}
         search_start_dt = datetime.strptime(search_json["start"], "%Y-%m-%d T%H:%M %z")
         search_end_dt = datetime.strptime(search_json["end"], "%Y-%m-%d T%H:%M %z")
         doc_dict = dict()
