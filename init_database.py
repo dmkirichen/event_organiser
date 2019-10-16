@@ -15,13 +15,13 @@ posts = [{"_id": 0, "name": "default"},
 for post in posts:
     type_col.save(post)
 
-posts = [{"_id": 0, "address": "nowhere", "visitors": 0, "openness": "open", "type": 0,
+posts = [{"_id": 0, "name": "Not event", "address": "nowhere", "visitors": 0, "openness": "open", "type": 0,
           "start": "2019-10-15 T21:20 +0300",
           "end": "2019-10-15 T21:25 +0300"},
-         {"_id": 1, "address": "Kyiv", "visitors": 56, "openness": "open", "type": 2,
+         {"_id": 1, "name": "Student Meet-up", "address": "Kyiv", "visitors": 56, "openness": "open", "type": 2,
           "start": "1997-07-16 T19:20 +0300",
           "end": "1997-07-16 T21:20 +0300"},
-         {"_id": 2, "address": "Dnipro", "visitors": 5, "openness": "close", "type": 1,
+         {"_id": 2, "name": "DniproSomething", "address": "Dnipro", "visitors": 5, "openness": "close", "type": 1,
           "start": "2017-08-16 T19:20 +0300",
           "end": "2017-09-16 T21:20 +0300"}]
 for post in posts:

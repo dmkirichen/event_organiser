@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
-from datetime import datetime, timedelta
+from datetime import datetime
 import itertools
 
 # Flask default
@@ -26,8 +26,7 @@ def create_orders(event_id):
     end_dt = datetime.strptime(event["end"], "%Y-%m-%d T%H:%M %z")
 
     weekdays = False  # flag to know if event will be on Mon-Fri
-    print(end_dt-start_dt)
-    print((end_dt - start_dt).days)
+
     if start_dt.weekday() not in [5, 6] or \
             end_dt.weekday() not in [5, 6] or \
             (end_dt - start_dt).days > 2:
@@ -64,6 +63,16 @@ def create_orders(event_id):
                             "event_id": event_id, "type": kind})
 
 
+def is_event_correct(event_json):
+    start_dt = datetime.strptime(event_json["start"], "%Y-%m-%d T%H:%M %z")
+    end_dt = datetime.strptime(event_json["end"], "%Y-%m-%d T%H:%M %z")
+    if start_dt > end_dt:
+        return False
+    if event_json["visitors"] < 0:
+        return False
+    type_col.find_one({"name": event_json["type"]})
+
+
 class Events(Resource):
     def get(self):
         # Returns all events in the database
@@ -75,31 +84,18 @@ class Events(Resource):
         return jsonify(doc_dict)
 
     def post(self):
-        # Creates new event in the database
         event_json = request.get_json()
+
+        # Checks correctness of the events
+
+
+        # Creates new event in the database
         event_col.save(event_json)
 
         # Creates orders for this event
         create_orders(event_json["_id"])
 
         return {"you sent": event_json}, 201
-
-
-class EventsSearch(Resource):
-    def post(self):
-        search_json = request.get_json()
-        search_start_dt = datetime.strptime(search_json["start"], "%Y-%m-%d T%H:%M %z")
-        search_end_dt = datetime.strptime(search_json["end"], "%Y-%m-%d T%H:%M %z")
-        doc_dict = dict()
-        counter = itertools.count(start=1)
-
-        for event in event_col.find({}):
-            event_start_dt = datetime.strptime(event["start"], "%Y-%m-%d T%H:%M %z")
-            event_end_dt = datetime.strptime(event["end"], "%Y-%m-%d T%H:%M %z")
-
-            if search_start_dt < event_start_dt and search_end_dt > event_end_dt:
-                doc_dict["event #" + str(counter.__next__())] = event
-        return jsonify({"found events": doc_dict})
 
 
 class EventTypes(Resource):
@@ -130,10 +126,48 @@ class ExtraOrders(Resource):
         return jsonify(doc_dict)
 
 
+class EventsSearch(Resource):
+    def post(self):
+        search_json = request.get_json()
+        search_start_dt = datetime.strptime(search_json["start"], "%Y-%m-%d T%H:%M %z")
+        search_end_dt = datetime.strptime(search_json["end"], "%Y-%m-%d T%H:%M %z")
+        doc_dict = dict()
+        counter = itertools.count(start=1)
+
+        for event in event_col.find({}):
+            event_start_dt = datetime.strptime(event["start"], "%Y-%m-%d T%H:%M %z")
+            event_end_dt = datetime.strptime(event["end"], "%Y-%m-%d T%H:%M %z")
+
+            if search_start_dt < event_start_dt and search_end_dt > event_end_dt:
+                doc_dict["event #" + str(counter.__next__())] = event
+        return jsonify({"found events": doc_dict})
+
+
+class OrdersSearch(Resource):
+    def post(self):
+        search_json = request.get_json()
+        search_start_dt = datetime.strptime(search_json["start"], "%Y-%m-%d T%H:%M %z")
+        search_end_dt = datetime.strptime(search_json["end"], "%Y-%m-%d T%H:%M %z")
+        doc_dict = dict()
+        counter = itertools.count(start=1)
+
+        for order in order_col.find({}):
+            event = event_col.find_one({"_id": order["event_id"]})
+            order_start_dt = datetime.strptime(event["start"], "%Y-%m-%d T%H:%M %z")
+            order_end_dt = datetime.strptime(event["end"], "%Y-%m-%d T%H:%M %z")
+
+            if search_start_dt < order_start_dt and search_end_dt > order_end_dt:
+                order["name"] = event["name"]
+                order["address"] = event["address"]
+                doc_dict["order #" + str(counter.__next__())] = order
+        return jsonify({"found events": doc_dict})
+
+
 api.add_resource(Events, '/events')
 api.add_resource(EventTypes, '/types')
 api.add_resource(ExtraOrders, '/orders')
 api.add_resource(EventsSearch, '/events/search')
+api.add_resource(OrdersSearch, '/orders/search')
 
 if __name__ == '__main__':
     app.run(debug=True)
