@@ -1,5 +1,11 @@
+"""
+Author: Kyrychenko Dmytro
+Date: 17 Oct 2019
+
+Script for initializing database from zero.
+"""
+
 from pymongo import MongoClient
-from datetime import datetime
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['event_organiser']

@@ -1,3 +1,5 @@
 venv/
 .idea
 simple_*
+testing_db.py
+__pycache*
