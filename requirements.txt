@@ -1,0 +1,13 @@
+Click
+Flask
+Flask-RESTful
+Jinja2
+MarkupSafe
+Werkzeug
+aniso8601
+itsdangerous
+pip
+pymongo
+pytz
+setuptools
+six
