@@ -59,7 +59,7 @@ Show all extra orders in the database.
 
 **URL**: /orders
 **Method**: GET
-**Data constraints**: {}
+**Data constraints**: ```{}```
 ---
 ## Search for events in a timeline
 
